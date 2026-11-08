@@ -273,6 +273,17 @@
     .prices { grid-template-columns: 1fr; }
     .price { display: flex; justify-content: space-between; align-items: baseline; }
   }
+  /* Узкие телефоны: шапка с кнопкой темы и «Выбрать курс» должна помещаться без прокрутки */
+  @media (max-width: 380px) {
+    .header .wrap { gap: 8px; }
+    .logo { font-size: 18px; gap: 6px; }
+    .header-actions { gap: 6px; }
+    .theme-btn { width: 36px; height: 36px; }
+    .btn-choose { padding: 6px 10px; font-size: 13px; }
+  }
+  @media (max-width: 340px) {
+    .logo { font-size: 0; }
+  }
 </style>
 </head>
 <body>
