@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Примеры кадров — Ракурс</title>
+<meta name="description" content="Примеры кадров в видоискателе: настройки съёмки и что заметить в каждом снимке. Онлайн-школа фотографии «Ракурс».">
+<script>
+  // Тему, выбранную кнопкой, ставим до отрисовки, чтобы страница не мигала светлой.
+  try { var t = localStorage.getItem('rakurs-theme'); if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f2ec;
+    --surface: #ffffff;
+    --ink: #1d1b19;
+    --muted: #6b645c;
+    --line: #e2dbd1;
+    --accent: #e86b3a;
+    --accent-hover: #c95427;
+    --accent-ink: #ffffff;
+    --dark: #1d1b19;
+    --dark-ink: #f6f2ec;
+    --on-ink: #f6f2ec;   /* текст на плашках цвета --ink */
+    --camera: #151413;   /* корпус камеры */
+    --radius: 18px;
+    --wrap: 1120px;
+    color-scheme: light;
+  }
+  /* Тёмная тема: по настройке системы, если пользователь не выбрал тему сам, или по кнопке в шапке */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171513; --surface: #211e1b; --ink: #f1ece5; --muted: #a89f95; --line: #36312c;
+      --dark: #0e0d0c; --dark-ink: #f6f2ec; --on-ink: #1d1b19; --camera: #0b0a09;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #171513; --surface: #211e1b; --ink: #f1ece5; --muted: #a89f95; --line: #36312c;
+    --dark: #0e0d0c; --dark-ink: #f6f2ec; --on-ink: #1d1b19; --camera: #0b0a09;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 17px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  .wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 24px; }
+  h1, h2, h3 { line-height: 1.12; margin: 0; letter-spacing: -0.02em; }
+
+  /* Шапка — как на главной */
+  .header {
+    position: sticky; top: 0; z-index: 10;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .header .wrap { display: flex; align-items: center; justify-content: space-between; height: 68px; gap: 16px; }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 22px; text-decoration: none; }
+  .logo-mark { width: 30px; height: 30px; position: relative; flex: none; }
+  .logo-mark::before, .logo-mark::after { content: ""; position: absolute; width: 11px; height: 11px; border-color: var(--accent); border-style: solid; }
+  .logo-mark::before { top: 0; left: 0; border-width: 3px 0 0 3px; }
+  .logo-mark::after { bottom: 0; right: 0; border-width: 0 3px 3px 0; }
+  .logo-mark span { position: absolute; inset: 9px; border-radius: 50%; background: var(--ink); }
+  .nav { display: flex; gap: 6px; font-weight: 600; font-size: 15px; }
+  .nav a { text-decoration: none; color: var(--muted); padding: 8px 14px; border-radius: 999px; }
+  .nav a:hover { color: var(--ink); }
+  .nav a.active { background: var(--accent); color: var(--accent-ink); }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--accent); color: var(--accent-ink);
+    font: inherit; font-weight: 700; text-decoration: none;
+    padding: 16px 28px; border-radius: 999px; border: 0; cursor: pointer;
+    transition: transform .15s ease, background .15s ease;
+  }
+  .btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+  .btn-sm { padding: 10px 18px; font-size: 15px; }
+  .btn-choose { background: transparent; color: var(--ink); border: 2px solid var(--ink); padding: 8px 16px; white-space: nowrap; }
+  .btn-choose:hover { background: var(--ink); color: var(--on-ink); }
+
+  /* Переключатель темы */
+  .header-actions { display: flex; align-items: center; gap: 10px; }
+  .theme-btn {
+    width: 40px; height: 40px; flex: none; display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer;
+    transition: border-color .15s ease;
+  }
+  .theme-btn:hover { border-color: var(--accent); }
+  .theme-btn svg { width: 18px; height: 18px; }
+  .theme-btn .i-sun { display: none; }
+  .theme-btn[data-current="dark"] .i-sun { display: block; }
+  .theme-btn[data-current="dark"] .i-moon { display: none; }
+  .btn-choose .count {
+    display: none; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px;
+    background: var(--accent); color: var(--accent-ink); font-size: 13px; line-height: 22px; text-align: center;
+  }
+  .btn-choose.has-fav .count { display: inline-block; }
+
+  /* Страница с видоискателем */
+  .viewer { padding: 40px 0 88px; }
+  .viewer .wrap {
+    display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto 1fr;
+    grid-template-areas: "camera intro" "camera details"; column-gap: 56px; align-items: start;
+  }
+  .camera { grid-area: camera; }
+  .intro { grid-area: intro; }
+  .details { grid-area: details; }
+
+  .camera {
+    background: var(--camera); border-radius: 28px; padding: 18px;
+    box-shadow: 0 40px 80px -40px rgba(29,27,25,.6), inset 0 0 0 1px #2c2926;
+    position: sticky; top: 92px;
+  }
+
+  /* Свет и фокус задаются переменными на .vf. Регистрация через @property нужна,
+     чтобы они плавно анимировались: точка фокуса переезжает, свет меняется мягко. */
+  @property --fx { syntax: '<percentage>'; inherits: true; initial-value: 50%; }
+  @property --fy { syntax: '<percentage>'; inherits: true; initial-value: 50%; }
+  @property --rx { syntax: '<percentage>'; inherits: true; initial-value: 200%; }
+  @property --blur { syntax: '<length>'; inherits: true; initial-value: 0px; }
+  @property --exp { syntax: '<number>'; inherits: true; initial-value: 1; }
+
+  .vf {
+    --fx: 50%; --fy: 50%; --rx: 200%; --blur: 0px; --exp: 1;
+    position: relative; overflow: hidden; border-radius: 12px; background: #000;
+    height: clamp(420px, calc(100vh - 350px), 700px); aspect-ratio: 2 / 3;
+    user-select: none; touch-action: pan-y; cursor: crosshair;
+    transition: --fx .45s ease, --fy .45s ease, --rx .3s ease, --blur .3s ease, --exp .2s ease;
+  }
+  /* Слой кадра: снизу размытая копия, сверху резкая, у резкой видна только зона вокруг точки фокуса.
+     Слой чуть увеличен, чтобы размытые края не просвечивали чёрным. */
+  .slot {
+    position: absolute; inset: 0; transform: scale(1.06); pointer-events: none;
+    filter: brightness(var(--exp)); transition: opacity .35s ease;
+  }
+  .slot.hidden { opacity: 0; }
+  .slot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .slot .ph-blur { filter: blur(var(--blur)); }
+  .slot .ph-sharp {
+    -webkit-mask-image: radial-gradient(ellipse var(--rx) calc(var(--rx) / 1.5) at var(--fx) var(--fy), #000 45%, transparent 100%);
+            mask-image: radial-gradient(ellipse var(--rx) calc(var(--rx) / 1.5) at var(--fx) var(--fy), #000 45%, transparent 100%);
+  }
+  /* затемнение по краям, как в окуляре */
+  .vf::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,.45) 100%);
+  }
+  .vf-shutter { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 5; }
+  .vf-shutter.snap { animation: snap .28s ease; }
+  @keyframes snap { 0% { opacity: 0; } 35% { opacity: .9; } 100% { opacity: 0; } }
+
+  .vf-grid {
+    position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; transition: opacity .25s ease;
+    background:
+      linear-gradient(to right, transparent calc(33.33% - .5px), rgba(255,255,255,.55) calc(33.33% - .5px), rgba(255,255,255,.55) calc(33.33% + .5px), transparent calc(33.33% + .5px),
+                                transparent calc(66.66% - .5px), rgba(255,255,255,.55) calc(66.66% - .5px), rgba(255,255,255,.55) calc(66.66% + .5px), transparent calc(66.66% + .5px)),
+      linear-gradient(to bottom, transparent calc(33.33% - .5px), rgba(255,255,255,.55) calc(33.33% - .5px), rgba(255,255,255,.55) calc(33.33% + .5px), transparent calc(33.33% + .5px),
+                                transparent calc(66.66% - .5px), rgba(255,255,255,.55) calc(66.66% - .5px), rgba(255,255,255,.55) calc(66.66% + .5px), transparent calc(66.66% + .5px));
+  }
+  .vf.show-grid .vf-grid { opacity: 1; }
+  .vf .corner { position: absolute; z-index: 3; width: 30px; height: 30px; border: 0 solid rgba(255,255,255,.92); pointer-events: none; }
+  .vf .c1 { top: 18px; left: 18px; border-top-width: 3px; border-left-width: 3px; }
+  .vf .c2 { top: 18px; right: 18px; border-top-width: 3px; border-right-width: 3px; }
+  .vf .c3 { bottom: 18px; left: 18px; border-bottom-width: 3px; border-left-width: 3px; }
+  .vf .c4 { bottom: 18px; right: 18px; border-bottom-width: 3px; border-right-width: 3px; }
+  /* Рамка автофокуса стоит там же, где резкая зона (с поправкой на увеличение слоя 1.06). */
+  .vf .af {
+    position: absolute; z-index: 3; width: 54px; height: 40px;
+    left: calc(50% + (var(--fx) - 50%) * 1.06); top: calc(50% + (var(--fy) - 50%) * 1.06);
+    transform: translate(-50%, -50%);
+    border: 2px solid rgba(255,255,255,.85); border-radius: 4px; pointer-events: none;
+  }
+  .vf .af.locked { border-color: #8fe388; }
+  .vf .af.hunt { animation: hunt .4s ease; }
+  @keyframes hunt { 0% { transform: translate(-50%, -50%) scale(1.5); } 60% { transform: translate(-50%, -50%) scale(.9); } 100% { transform: translate(-50%, -50%) scale(1); } }
+
+  /* Шкала экспозиции, как в настоящем видоискателе: −2 … 0 … +2 */
+  .hud.hud-meter { bottom: 96px; justify-content: center; }
+  .meter { position: relative; width: 145px; padding-bottom: 10px; }
+  .meter-labels { display: flex; justify-content: space-between; font-size: 11px; margin: 0 -6px 3px; }
+  .meter-ticks { height: 6px; background: repeating-linear-gradient(to right, rgba(255,255,255,.85) 0 1px, transparent 1px 12px); }
+  .meter-mark {
+    position: absolute; bottom: 0; left: 50%; width: 0; height: 0; transform: translateX(-50%);
+    border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 7px solid var(--accent);
+    transition: left .2s ease;
+  }
+
+  /* Ручки камеры под видоискателем */
+  /* width: 0 + min-width: 100% — ручки не растягивают корпус, ширину задаёт видоискатель */
+  .controls, .camera-bar { width: 0; min-width: 100%; box-sizing: border-box; }
+  .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; padding: 16px 4px 0; }
+  .controls .vf-hint { grid-column: 1 / -1; }
+  .control-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; color: var(--dark-ink); font-size: 14px; font-weight: 700; }
+  .control-head output { color: #b9b1a7; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .control input[type="range"] { width: 100%; margin: 6px 0 0; accent-color: var(--accent); cursor: pointer; }
+  .control-ends { display: flex; justify-content: space-between; color: #8a8279; font-size: 12px; font-weight: 600; }
+  .vf-hint { margin: 0; min-height: 2.9em; color: #b9b1a7; font-size: 13px; line-height: 1.45; }
+  .btn-reset {
+    font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; padding: 6px 12px; border-radius: 999px;
+    background: transparent; color: var(--dark-ink); border: 1px solid #3a3632; transition: border-color .15s ease;
+  }
+  .btn-reset:hover { border-color: var(--accent); }
+  .hud {
+    position: absolute; z-index: 4; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center;
+    padding: 0 26px; color: #fff; font-size: 13px; font-weight: 700; letter-spacing: .02em; pointer-events: none;
+    text-shadow: 0 1px 3px rgba(0,0,0,.6); font-variant-numeric: tabular-nums;
+  }
+  .hud-top { top: 58px; }
+  .hud-bottom { bottom: 58px; }
+  .hud-bottom .vals { display: flex; gap: 14px; background: rgba(0,0,0,.45); padding: 6px 14px; border-radius: 999px; text-shadow: none; }
+  .hud .dot { color: var(--accent); }
+
+  .vf-nav {
+    position: absolute; z-index: 6; top: 50%; transform: translateY(-50%);
+    width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer;
+    background: rgba(0,0,0,.4); color: #fff; font-size: 22px; line-height: 44px; text-align: center;
+    transition: background .15s ease;
+  }
+  .vf-nav:hover { background: var(--accent); }
+  .vf-prev { left: 10px; }
+  .vf-next { right: 10px; }
+
+  .camera-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 4px 0; color: #b9b1a7; font-size: 13px; font-weight: 600; }
+  .switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; color: var(--dark-ink); background: none; border: 0; font: inherit; font-size: 14px; font-weight: 700; padding: 0; }
+  .switch .track { width: 38px; height: 22px; border-radius: 999px; background: #3a3632; position: relative; transition: background .2s ease; }
+  .switch .track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .2s ease; }
+  .switch[aria-pressed="true"] .track { background: var(--accent); }
+  .switch[aria-pressed="true"] .track::after { transform: translateX(16px); }
+
+  /* Правая колонка */
+  .eyebrow { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); margin-bottom: 14px; }
+  .intro h1 { font-size: clamp(34px, 4.4vw, 52px); font-weight: 800; }
+  .intro .lead { color: var(--muted); font-size: 19px; margin: 18px 0 36px; max-width: 40ch; }
+
+  .shot { border-top: 2px solid var(--ink); padding-top: 22px; min-height: 260px; }
+  .shot-num { font-size: 14px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .shot h2 { font-size: 30px; font-weight: 800; margin: 6px 0 12px; }
+  .shot p { margin: 0 0 18px; }
+  .tip { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 12px; padding: 14px 18px; }
+  .tip b { display: block; font-size: 14px; color: var(--accent); margin-bottom: 4px; }
+  .settings { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+  .settings span { font-size: 13px; font-weight: 700; padding: 5px 11px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+
+  .thumbs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 32px 0 0; padding: 0; list-style: none; }
+  .thumbs button {
+    display: block; width: 100%; aspect-ratio: 2 / 3; padding: 0; border: 0; border-radius: 10px; overflow: hidden; cursor: pointer;
+    outline: 2px solid transparent; outline-offset: 3px; opacity: .6; transition: opacity .2s ease, outline-color .2s ease;
+    background: var(--line);
+  }
+  .thumbs button:hover { opacity: .9; }
+  .thumbs button[aria-current="true"] { opacity: 1; outline-color: var(--accent); }
+  .thumbs img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .gear { margin: 28px 0 0; color: var(--muted); font-size: 15px; }
+  .cta { margin-top: 32px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+  .cta span { color: var(--muted); font-size: 15px; }
+
+  .footer { background: var(--dark); color: #8a8279; font-size: 14px; padding: 28px 0; }
+
+  @media (max-width: 960px) {
+    .viewer .wrap { grid-template-columns: 1fr; grid-template-rows: none; grid-template-areas: "intro" "camera" "details"; }
+    .intro .lead { margin-bottom: 28px; }
+    .camera { position: static; justify-self: center; width: 100%; max-width: 520px; margin-bottom: 36px; }
+    .vf { height: auto; width: 100%; }
+    .shot { min-height: 0; }
+  }
+  /* На низком экране камера с ручками не помещается — не прилипает, а прокручивается вместе со страницей */
+  @media (max-height: 780px) {
+    .camera { position: static; }
+  }
+  @media (max-width: 640px) {
+    .wrap { padding: 0 16px; }
+    .nav { display: none; }
+    .viewer { padding: 28px 0 64px; }
+    .camera { padding: 10px; border-radius: 20px; }
+    .hud { padding: 0 20px; font-size: 12px; }
+    .hud-top { top: 48px; } .hud-bottom { bottom: 48px; } .hud.hud-meter { bottom: 84px; }
+    .vf .corner { width: 24px; height: 24px; }
+    .vf .c1, .vf .c2 { top: 14px; } .vf .c3, .vf .c4 { bottom: 14px; }
+    .vf .c1, .vf .c3 { left: 14px; } .vf .c2, .vf .c4 { right: 14px; }
+    .thumbs { gap: 6px; }
+  }
+  @media (max-width: 420px) {
+    .controls { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="wrap">
+    <a class="logo" href="index.html" aria-label="Ракурс — на главную"><span class="logo-mark"><span></span></span>Ракурс</a>
+    <nav class="nav" aria-label="Разделы">
+      <a href="index.html#courses">Курсы и цены</a>
+      <a href="index.html#terms">Условия</a>
+      <a href="index.html#contacts">Контакты</a>
+      <a href="gallery.html" class="active" aria-current="page">Примеры фото</a>
+    </nav>
+    <div class="header-actions">
+      <button class="theme-btn" id="themeBtn" type="button" aria-label="Включить тёмную тему">
+        <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+      <a class="btn btn-sm btn-choose" id="chooseBtn" href="index.html#courses"><span class="label">Выбрать курс</span><span class="count">0</span></a>
+    </div>
+  </div>
+</header>
+
+<main class="viewer">
+  <div class="wrap">
+    <div class="camera">
+      <div class="vf" id="vf">
+        <div class="slot" id="slotA"><img class="ph-blur" alt="" aria-hidden="true"><img class="ph-sharp" alt=""></div>
+        <div class="slot hidden" id="slotB" aria-hidden="true"><img class="ph-blur" alt="" aria-hidden="true"><img class="ph-sharp" alt=""></div>
+        <div class="vf-grid"></div>
+        <i class="corner c1"></i><i class="corner c2"></i><i class="corner c3"></i><i class="corner c4"></i>
+        <div class="af" id="af"></div>
+        <div class="hud hud-top"><span>AF-S</span><span id="hudCount">1/5</span></div>
+        <div class="hud hud-meter" aria-hidden="true">
+          <div class="meter"><div class="meter-labels"><span>−2</span><span>0</span><span>+2</span></div><div class="meter-ticks"></div><i class="meter-mark" id="meterMark"></i></div>
+        </div>
+        <div class="hud hud-bottom"><span class="vals"><span id="hudIso">ISO 200</span><span id="hudExp">1/1250</span><span id="hudF">f/2.8</span><span id="hudFl">85 мм</span></span><span class="dot">●</span></div>
+        <div class="vf-shutter" id="shutter"></div>
+        <button class="vf-nav vf-prev" id="prev" type="button" aria-label="Предыдущий кадр">‹</button>
+        <button class="vf-nav vf-next" id="next" type="button" aria-label="Следующий кадр">›</button>
+      </div>
+
+      <div class="controls">
+        <div class="control">
+          <label class="control-head" for="light">Свет <output id="lightOut" for="light">0 EV</output></label>
+          <input type="range" id="light" min="-6" max="6" step="1" value="0">
+          <div class="control-ends"><span>темнее</span><span>светлее</span></div>
+        </div>
+        <div class="control">
+          <label class="control-head" for="focus">Фокус <output id="focusOut" for="focus">как снято</output></label>
+          <input type="range" id="focus" min="0" max="100" step="5" value="0">
+          <div class="control-ends"><span>всё резко</span><span>только точка</span></div>
+        </div>
+        <p class="vf-hint" id="vfHint"></p>
+      </div>
+
+      <div class="camera-bar">
+        <button class="switch" id="gridToggle" type="button" aria-pressed="false"><span class="track"></span>Сетка третей</button>
+        <button class="btn-reset" id="reset" type="button">Как снято</button>
+      </div>
+    </div>
+
+    <div class="intro">
+      <div class="eyebrow">Примеры кадров</div>
+      <h1>Смотри через видоискатель</h1>
+      <p class="lead">Листай кадры, двигай свет и фокус и смотри, как меняется снимок. Коснись кадра — туда переедет точка фокуса. Сетка третей покажет композицию.</p>
+    </div>
+
+    <div class="details">
+      <div class="shot" aria-live="polite">
+        <div class="shot-num" id="shotNum">Кадр 1 из 5</div>
+        <h2 id="shotTitle"></h2>
+        <p id="shotText"></p>
+        <div class="tip"><b>Попробуй сам</b><span id="shotTip"></span></div>
+        <div class="settings" id="shotSettings"></div>
+      </div>
+
+      <ul class="thumbs" id="thumbs"></ul>
+
+      <p class="gear">Все кадры сняты на Canon EOS 5D Mark III с объективом 85 мм. Настройки взяты из файлов снимков. Свет и фокус в видоискателе — имитация поверх готового кадра: она показывает принцип, а камера делает это по-настоящему.</p>
+
+      <div class="cta">
+        <a class="btn" href="index.html#courses">Научиться снимать так же</a>
+        <span>Начать можно и с телефона</span>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="wrap">© Ракурс — онлайн-школа фотографии для взрослых новичков</div>
+</footer>
+
+<script>
+  // Кадры для видоискателя. Файлы — уменьшенные копии из pic/web, настройки — из EXIF оригиналов.
+  // fx, fy — где на снимке лицо героя (в % от ширины и высоты): туда ставится фокус по умолчанию.
+  var SHOTS = [
+    {
+      src: 'pic/web/_02_2565.jpg', fx: 54, fy: 50,
+      alt: 'Крупный план: мужчина касается волос женщины, фон размыт в светлые круги',
+      title: 'Фон, который не спорит',
+      text: 'Солнце светит сбоку сквозь листву и кладёт тёплое пятно на лицо. Деревья за спиной размыты в мягкие круги — фон есть, но он не отвлекает.',
+      tip: 'Отойди от фона подальше и подойди к человеку поближе. Чем больше расстояние до фона, тем сильнее он размывается. На телефоне помогает портретный режим.',
+      iso: 200, exp: '1/1250', f: '2.8', fl: 85
+    },
+    {
+      src: 'pic/web/_02_2665.jpg', fx: 51, fy: 54,
+      alt: 'Пара обнимается на песке под большой сосной',
+      title: 'Место тоже рассказывает',
+      text: 'Пара стоит в нижней части кадра, а сверху — большая сосна. Сразу понятно, где всё происходит. Свет пробивается сквозь ветки и рисует пятна на песке.',
+      tip: 'Не всегда нужно приближать людей вплотную. Сделай пару кадров пошире, чтобы в них поместилось место.',
+      iso: 200, exp: '1/1250', f: '2.8', fl: 85
+    },
+    {
+      src: 'pic/web/_02_2969.jpg', fx: 54, fy: 40,
+      alt: 'Пара идёт по мелкой воде, держась за руки, внизу их отражения',
+      title: 'Отражения удваивают кадр',
+      text: 'Пара идёт по мелкой воде, и внизу появляются их отражения. Солнце светит из-за спины, поэтому контуры фигур мягко светятся.',
+      tip: 'Попроси людей идти к тебе и снимай серией. В движении позы получаются живее, чем когда человек стоит и ждёт команды.',
+      iso: 125, exp: '1/3200', f: '2.8', fl: 85
+    },
+    {
+      src: 'pic/web/_02_3021.jpg', fx: 50, fy: 36,
+      alt: 'Беременная женщина в полосатом платье смотрит вниз, солнце подсвечивает волосы',
+      title: 'Свет из-за спины',
+      text: 'Низкое солнце светит сзади: волосы горят золотым контуром, а лицо остаётся в мягкой тени без резких бликов. Героине не приходится щуриться.',
+      tip: 'Вечером поставь человека спиной к солнцу. Если лицо выходит тёмным, коснись его на экране телефона — камера выставит яркость по нему.',
+      iso: 125, exp: '1/3200', f: '2.8', fl: 85
+    },
+    {
+      src: 'pic/web/_02_3331.jpg', fx: 48, fy: 37,
+      alt: 'Женщина в полосатом платье стоит в воде, вокруг много неба и воды',
+      title: 'Пусто — значит спокойно',
+      text: 'Большую часть кадра занимают небо и вода. Ничего лишнего, поэтому взгляд сразу находит героиню.',
+      tip: 'Пустое небо — не ошибка. Если фон простой, героя видно лучше. Прежде чем снимать, проверь края кадра: там часто прячется лишнее.',
+      iso: 125, exp: '1/3200', f: '2.8', fl: 85
+    }
+  ];
+
+  (function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var vf = $('vf');
+    var slots = [$('slotA'), $('slotB')];
+    var front = 0;
+    var shutter = $('shutter');
+    var af = $('af');
+    var thumbs = $('thumbs');
+    var lightInput = $('light');
+    var focusInput = $('focus');
+    var current = -1;
+    var loadToken = 0;
+    var SCALE = 1.06; // во столько раз увеличен слой кадра (см. .slot в CSS)
+
+    // Состояние ручек: свет в третях ступени (−6…+6 = −2…+2 EV), фокус 0…100, точка фокуса в % снимка.
+    var state = { ev: 0, depth: 0, fx: 50, fy: 50 };
+
+    function fmtEv(t) {
+      if (t === 0) return '0 EV';
+      var sign = t > 0 ? '+' : '−', a = Math.abs(t), whole = Math.floor(a / 3), frac = ['', '⅓', '⅔'][a % 3];
+      return sign + (whole ? whole : '') + frac + ' EV';
+    }
+    function fmtFocus(d) {
+      if (d === 0) return 'как снято';
+      if (d <= 35) return 'фон мягче';
+      if (d <= 70) return 'фон размыт';
+      return 'только точка';
+    }
+
+    function hint() {
+      var msgs = [], ev = state.ev / 3, s = SHOTS[current];
+      if (ev >= 1) msgs.push('Пересвет: светлые места уходят в белое.');
+      else if (ev <= -1) msgs.push('Недосвет: тени проваливаются в черноту.');
+      else if (state.ev !== 0) msgs.push('Лёгкая поправка: кадр чуть темнее или светлее.');
+      if (state.depth > 0) {
+        // Расстояние от точки фокуса до лица героя (высоту приводим к ширине: кадр 2:3).
+        var dx = state.fx - s.fx, dy = (state.fy - s.fy) * 1.5;
+        if (Math.sqrt(dx * dx + dy * dy) > 14) msgs.push('Фокус ушёл с героя — взгляд цепляется не за лицо.');
+        else msgs.push('Герой резкий, фон размыт — как с открытой диафрагмой или в портретном режиме.');
+      }
+      if (!msgs.length) msgs.push('Так кадр снят. Двигай ручки или коснись кадра — туда переедет фокус.');
+      return msgs.join(' ');
+    }
+
+    function apply() {
+      var d = state.depth / 100;
+      vf.style.setProperty('--exp', Math.pow(2, state.ev / 3 * 0.6).toFixed(3));
+      vf.style.setProperty('--blur', (d * 10).toFixed(1) + 'px');
+      vf.style.setProperty('--rx', (d === 0 ? 200 : 48 - 26 * d).toFixed(1) + '%');
+      vf.style.setProperty('--fx', state.fx.toFixed(1) + '%');
+      vf.style.setProperty('--fy', state.fy.toFixed(1) + '%');
+      $('meterMark').style.left = ((state.ev + 6) / 12 * 100) + '%';
+      $('lightOut').textContent = fmtEv(state.ev);
+      lightInput.setAttribute('aria-valuetext', fmtEv(state.ev));
+      $('focusOut').textContent = fmtFocus(state.depth);
+      focusInput.setAttribute('aria-valuetext', fmtFocus(state.depth));
+      $('vfHint').textContent = hint();
+    }
+
+    function lockFocus() {
+      af.classList.remove('locked', 'hunt'); void af.offsetWidth; af.classList.add('hunt');
+      setTimeout(function () { af.classList.add('locked'); }, 350);
+    }
+
+    // Касание кадра: точка фокуса переезжает туда, куда нажали.
+    function focusAt(clientX, clientY) {
+      var r = vf.getBoundingClientRect();
+      var vx = (clientX - r.left) / r.width * 100, vy = (clientY - r.top) / r.height * 100;
+      var clamp = function (v) { return Math.max(0, Math.min(100, v)); };
+      state.fx = clamp(50 + (vx - 50) / SCALE);
+      state.fy = clamp(50 + (vy - 50) / SCALE);
+      // Если фон не размыт, перевод фокуса не будет виден — включаем размытие сами.
+      if (state.depth === 0) { state.depth = 50; focusInput.value = 50; }
+      lockFocus();
+      apply();
+    }
+
+    lightInput.addEventListener('input', function () { state.ev = +lightInput.value; apply(); });
+    focusInput.addEventListener('input', function () { state.depth = +focusInput.value; apply(); });
+    $('reset').addEventListener('click', function () {
+      var s = SHOTS[current];
+      state.ev = 0; state.depth = 0; state.fx = s.fx; state.fy = s.fy;
+      lightInput.value = 0; focusInput.value = 0;
+      apply();
+    });
+
+    SHOTS.forEach(function (s, i) {
+      var li = document.createElement('li');
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('aria-label', 'Кадр ' + (i + 1) + ': ' + s.title);
+      b.innerHTML = '<img src="' + s.src + '" alt="" loading="lazy">';
+      b.addEventListener('click', function () { show(i); });
+      li.appendChild(b);
+      thumbs.appendChild(li);
+    });
+    var thumbBtns = thumbs.querySelectorAll('button');
+
+    function show(i) {
+      i = (i + SHOTS.length) % SHOTS.length;
+      if (i === current) return;
+      var s = SHOTS[i];
+      var first = current === -1;
+      current = i;
+
+      // Сменить картинку плавно: новая грузится в задний слой (резкая и размытая копии), затем слои меняются местами.
+      // Смена должна сработать ровно один раз: если фото уже в кэше, браузер может и сразу
+      // отдать complete, и потом всё равно прислать load — двойная смена прятала оба слоя.
+      var back = slots[1 - front];
+      var sharp = back.querySelector('.ph-sharp');
+      var token = ++loadToken;
+      var done = false;
+      function reveal() {
+        if (done || token !== loadToken) return;
+        done = true;
+        sharp.onload = null;
+        var old = slots[front];
+        back.classList.remove('hidden'); back.removeAttribute('aria-hidden');
+        old.classList.add('hidden'); old.setAttribute('aria-hidden', 'true');
+        front = slots.indexOf(back);
+      }
+      sharp.onload = reveal;
+      sharp.alt = s.alt;
+      back.querySelector('.ph-blur').src = s.src;
+      sharp.src = s.src;
+      if (sharp.complete && sharp.naturalWidth) reveal();
+
+      // Фокус по умолчанию — на лице героя; свет и размытие сохраняются между кадрами.
+      state.fx = s.fx; state.fy = s.fy;
+      apply();
+
+      if (!first) {
+        shutter.classList.remove('snap'); void shutter.offsetWidth; shutter.classList.add('snap');
+        lockFocus();
+      } else {
+        af.classList.add('locked');
+      }
+
+      $('hudCount').textContent = (i + 1) + '/' + SHOTS.length;
+      $('hudIso').textContent = 'ISO ' + s.iso;
+      $('hudExp').textContent = s.exp;
+      $('hudF').textContent = 'f/' + s.f;
+      $('hudFl').textContent = s.fl + ' мм';
+
+      $('shotNum').textContent = 'Кадр ' + (i + 1) + ' из ' + SHOTS.length;
+      $('shotTitle').textContent = s.title;
+      $('shotText').textContent = s.text;
+      $('shotTip').textContent = s.tip;
+      $('shotSettings').innerHTML =
+        '<span>Выдержка ' + s.exp + '</span><span>Диафрагма f/' + s.f + '</span><span>ISO ' + s.iso + '</span><span>' + s.fl + ' мм</span>';
+
+      thumbBtns.forEach(function (b, k) { b.setAttribute('aria-current', k === i ? 'true' : 'false'); });
+    }
+
+    $('prev').addEventListener('click', function () { show(current - 1); });
+    $('next').addEventListener('click', function () { show(current + 1); });
+    document.addEventListener('keydown', function (e) {
+      // Стрелки на ползунке двигают ползунок, а не листают кадры.
+      if (e.target.closest && e.target.closest('input, textarea, select')) return;
+      if (e.key === 'ArrowLeft') show(current - 1);
+      if (e.key === 'ArrowRight') show(current + 1);
+    });
+
+    // Свайп листает кадры, короткое касание переводит фокус.
+    var start = null;
+    vf.addEventListener('pointerdown', function (e) {
+      start = e.target.closest('.vf-nav') ? null : { x: e.clientX, y: e.clientY };
+    });
+    vf.addEventListener('pointercancel', function () { start = null; });
+    vf.addEventListener('pointerup', function (e) {
+      if (!start) return;
+      var dx = e.clientX - start.x, dy = e.clientY - start.y;
+      start = null;
+      if (Math.abs(dx) > 40) show(current + (dx < 0 ? 1 : -1));
+      else if (Math.abs(dx) < 10 && Math.abs(dy) < 10) focusAt(e.clientX, e.clientY);
+    });
+
+    var gridBtn = $('gridToggle');
+    gridBtn.addEventListener('click', function () {
+      var on = gridBtn.getAttribute('aria-pressed') !== 'true';
+      gridBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      vf.classList.toggle('show-grid', on);
+    });
+
+    show(0);
+  })();
+
+  // Счётчик избранных курсов в шапке (выбор делается на главной).
+  (function () {
+    var favs = [];
+    try { favs = JSON.parse(localStorage.getItem('rakurs-favorites')) || []; } catch (e) {}
+    var btn = document.getElementById('chooseBtn');
+    if (favs.length) {
+      btn.classList.add('has-fav');
+      btn.querySelector('.label').textContent = 'Избранное';
+      btn.querySelector('.count').textContent = favs.length;
+    }
+  })();
+
+  // Переключатель темы: запоминается в localStorage (rakurs-theme), без выбора — как в системе.
+  (function () {
+    var root = document.documentElement, btn = document.getElementById('themeBtn');
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    function current() { return root.getAttribute('data-theme') || (mq.matches ? 'dark' : 'light'); }
+    function sync() {
+      var c = current();
+      btn.setAttribute('data-current', c);
+      btn.setAttribute('aria-label', c === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему');
+    }
+    btn.addEventListener('click', function () {
+      var next = current() === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('rakurs-theme', next); } catch (e) {}
+      sync();
+    });
+    if (mq.addEventListener) mq.addEventListener('change', sync);
+    sync();
+  })();
+</script>
+
+</body>
+</html>
